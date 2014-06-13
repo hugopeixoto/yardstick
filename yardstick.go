@@ -2,7 +2,7 @@ package main
 
 import (
   "net"
-  "fmt"
+  "log"
   "time"
   "bytes"
   "crypto/rand"
@@ -102,8 +102,8 @@ func (nw *Yardstick) Ping(endpoint Server) {
 
 func (nw *Yardstick) Report(endpoint Server, rtt time.Duration, err error) {
   if err != nil {
-    fmt.Printf("<%v> %v Error: %v\n", nw.Address, endpoint.Name, err)
+    log.Printf("<%v> %v Error: %v\n", nw.Address, endpoint.Name, err)
   } else {
-    fmt.Printf("<%v> %v RTT: %v\n", nw.Address, endpoint.Name, rtt)
+    log.Printf("<%v> %v RTT: %v\n", nw.Address, endpoint.Name, rtt)
   }
 }

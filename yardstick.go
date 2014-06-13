@@ -13,13 +13,13 @@ type Server struct {
   Address string
 }
 
-type NetFlow struct {
+type Yardstick struct {
   Server    Server
   Endpoints []Server
 }
 
-func NewNetFlow(name string, servers []Server) (*NetFlow) {
-  nf := NetFlow{}
+func NewYardstick(name string, servers []Server) (*Yardstick) {
+  nf := Yardstick{}
 
   nf.Endpoints = make([]Server, 0)
 
@@ -34,7 +34,7 @@ func NewNetFlow(name string, servers []Server) (*NetFlow) {
   return &nf
 }
 
-func (nw *NetFlow) Run() {
+func (nw *Yardstick) Run() {
   go nw.Listen()
 
   for {
@@ -46,7 +46,7 @@ func (nw *NetFlow) Run() {
   }
 }
 
-func (nw *NetFlow) Listen() {
+func (nw *Yardstick) Listen() {
   message := make([]byte, 256)
 
   listenAddress, _ := net.ResolveUDPAddr("udp", nw.Server.Address)
@@ -59,7 +59,7 @@ func (nw *NetFlow) Listen() {
   }
 }
 
-func (nw *NetFlow) Ping(endpoint Server) {
+func (nw *Yardstick) Ping(endpoint Server) {
   ping := make([]byte, 256)
   pong := make([]byte, 256)
 

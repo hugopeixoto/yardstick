@@ -18,7 +18,7 @@ func main () {
 
   json.Unmarshal(file, &servers)
 
-  NewNetFlow(*name, servers).Run()
+  NewYardstick(*name, servers).Run()
 
   <-make(chan struct{})
 }

@@ -1,4 +1,5 @@
 {
+  "Statsd": "",
   "Listen": "0.0.0.0:4367",
   "Peers": [
     { "Name": "database",    "Address": "127.0.0.1:4367" },

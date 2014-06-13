@@ -6,19 +6,23 @@ import (
   "io/ioutil"
 )
 
-func main () {
-  var servers []Server
+type Config struct {
+  Listen  string
+  Peers   []Server
+}
 
-  conf := flag.String("conf", "servers.json", "")
-  name := flag.String("name", "", "")
+func main () {
+  var conf Config
+
+  confpath := flag.String("conf", "servers.json", "")
 
   flag.Parse()
 
-  file, _ := ioutil.ReadFile(*conf)
+  file, _ := ioutil.ReadFile(*confpath)
 
-  json.Unmarshal(file, &servers)
+  json.Unmarshal(file, &conf)
 
-  NewYardstick(*name, servers).Run()
+  NewYardstick(conf.Listen, conf.Peers).Run()
 
   <-make(chan struct{})
 }

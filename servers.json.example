@@ -1,5 +1,8 @@
-[
-  { "Name": "database",    "Address": "127.0.0.1:4367" },
-  { "Name": "application", "Address": "127.0.0.1:4368" },
-  { "Name": "balancer",    "Address": "127.0.0.1:4369" }
-]
+{
+  "Listen": "0.0.0.0:4367",
+  "Peers": [
+    { "Name": "database",    "Address": "127.0.0.1:4367" },
+    { "Name": "application", "Address": "127.0.0.1:4368" },
+    { "Name": "balancer",    "Address": "127.0.0.1:4369" }
+  ]
+}

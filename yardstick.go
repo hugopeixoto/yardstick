@@ -6,6 +6,7 @@ import (
   "time"
   "bytes"
   "crypto/rand"
+  "errors"
 )
 
 type Server struct {
@@ -14,21 +15,22 @@ type Server struct {
 }
 
 type Yardstick struct {
-  Server    Server
+  Address   string
   Endpoints []Server
 }
 
-func NewYardstick(name string, servers []Server) (*Yardstick) {
+func NewYardstick(listen string, servers []Server) (*Yardstick) {
   nf := Yardstick{}
 
+  nf.Address   = listen
   nf.Endpoints = make([]Server, 0)
 
   for _, server := range servers {
-    if server.Name == name {
-      nf.Server = server
-    } else {
-      nf.Endpoints = append(nf.Endpoints, server)
+    if server.Address == "" {
+      server.Address = server.Name + ":4367"
     }
+
+    nf.Endpoints = append(nf.Endpoints, server)
   }
 
   return &nf
@@ -49,7 +51,7 @@ func (nw *Yardstick) Run() {
 func (nw *Yardstick) Listen() {
   message := make([]byte, 256)
 
-  listenAddress, _ := net.ResolveUDPAddr("udp", nw.Server.Address)
+  listenAddress, _ := net.ResolveUDPAddr("udp", nw.Address)
   sock, _          := net.ListenUDP("udp", listenAddress)
 
   for {
@@ -65,19 +67,43 @@ func (nw *Yardstick) Ping(endpoint Server) {
 
   rand.Read(ping)
 
-  connection, _ := net.Dial("udp", endpoint.Address)
+  connection, err := net.Dial("udp", endpoint.Address)
+  if err != nil {
+    nw.Report(endpoint, 0, err)
+    return
+  }
 
   before := time.Now()
-  connection.Write(ping)
+  _, err = connection.Write(ping)
 
-  connection.SetReadDeadline(time.Now().Add(5 * time.Second))
+  if err != nil {
+    nw.Report(endpoint, 0, err)
+    return
+  }
+
+  connection.SetReadDeadline(time.Now().Add(3 * time.Second))
 
   nbytes, err := connection.Read(pong)
   after := time.Now()
 
-  if err != nil || bytes.Compare(pong[0:nbytes], ping) != 0 {
-    fmt.Printf("<%v> %v Error\n", nw.Server.Name, endpoint.Name)
+  if err != nil {
+    nw.Report(endpoint, 0, err)
+    return
+  }
+
+  if bytes.Compare(pong[0:nbytes], ping) != 0 {
+    nw.Report(endpoint, 0, errors.New("Received invalid nonce"))
+    return
+  }
+
+
+  nw.Report(endpoint, before.Sub(after), nil)
+}
+
+func (nw *Yardstick) Report(endpoint Server, rtt time.Duration, err error) {
+  if err != nil {
+    fmt.Printf("<%v> %v Error: %v\n", nw.Address, endpoint.Name, err)
   } else {
-    fmt.Printf("<%v> %v RTT: %v\n", nw.Server.Name, endpoint.Name, after.Sub(before))
+    fmt.Printf("<%v> %v RTT: %v\n", nw.Address, endpoint.Name, rtt)
   }
 }

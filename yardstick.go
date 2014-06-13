@@ -14,16 +14,20 @@ type Server struct {
   Address string
 }
 
+type ReportFunc func(Server, time.Duration, error)
+
 type Yardstick struct {
   Address   string
   Endpoints []Server
+  ReportFn  ReportFunc
 }
 
-func NewYardstick(listen string, servers []Server) (*Yardstick) {
+func NewYardstick(listen string, servers []Server, fn ReportFunc) (*Yardstick) {
   nf := Yardstick{}
 
   nf.Address   = listen
   nf.Endpoints = make([]Server, 0)
+  nf.ReportFn  = fn
 
   for _, server := range servers {
     if server.Address == "" {
@@ -106,4 +110,6 @@ func (nw *Yardstick) Report(endpoint Server, rtt time.Duration, err error) {
   } else {
     log.Printf("<%v> %v RTT: %v\n", nw.Address, endpoint.Name, rtt)
   }
+
+  nw.ReportFn(endpoint, rtt, err)
 }
